@@ -1,0 +1,56 @@
+type Query{
+    sellers(filter: SellerFilter, page: PageInput!, sortBy: SellerSortBy): SellerPageableResponse!
+}
+input SellerFilter {
+    searchByName: String
+    producerIds: [ID]
+    marketplaceIds: [String]
+}
+
+input PageInput {
+    page: Int!
+    size: Int!
+}
+
+enum SellerSortBy {
+    SELLER_INFO_EXTERNAL_ID_ASC,
+    SELLER_INFO_EXTERNAL_ID_DESC,
+    NAME_ASC,
+    NAME_DESC,
+    MARKETPLACE_ID_ASC,
+    MARKETPLACE_ID_DESC,
+}
+
+type SellerPageableResponse {
+    meta: PageMeta!
+    data: [Seller!]!
+}
+
+type PageMeta {
+    page: Int!
+    size: Int!
+    totalElements: Int!
+    totalPages: Int!
+}
+
+
+type Seller {
+    sellerName: String
+    externalId: String!
+    producerSellerStates: [ProducerSellerState]!
+    marketplaceId: String
+}
+
+type ProducerSellerState {
+    producerId: ID!
+    producerName: String!
+    sellerState: SellerState!
+    sellerId: ID!
+}
+
+enum SellerState {
+    REGULAR
+    WHITELISTED
+    GREYLISTED
+    BLACKLISTED
+}
