@@ -15,9 +15,9 @@ public class SellerEntity {
     @GeneratedValue
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "producer_id", nullable = false)
-    private ProducerEntity producer;
+
+    @Column(name = "producer_id", nullable = false)
+    private UUID producerId;
 
     @ManyToOne
     @JoinColumn(name = "seller_info_id")

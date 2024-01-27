@@ -72,18 +72,7 @@ public class DataInitializer implements ApplicationRunner {
 
     private void publishProducerdData() {
 
-        List<String> producerNames = Arrays.asList(
-                "Global Goods Inc.",
-                "TechPioneers",
-                "FreshFarms Organic",
-                "StyleMasters Apparel",
-                "HomeComforts Furnishings",
-                "AdventureGear Outdoors",
-                "NextGen Electronics",
-                "LittleLearners Toys",
-                "HealthFirst Pharmaceuticals",
-                "AutoInnovators Parts"
-        );
+        List<String> producerNames = generateProducerNames();
 
         // Check if the data already exists to prevent duplicate insertions
 
@@ -133,12 +122,12 @@ public class DataInitializer implements ApplicationRunner {
 
         // Fetch all SellerInfoEntity instances
         List<SellerInfoEntity> sellerInfos = sellerInfoRepository.findAll();
-
+        int randomIndex = random.nextInt(90);
         sellerInfos.forEach(sellerInfo -> {
             // For each SellerInfoEntity, create and save 10 SellerEntity instances
-            List<SellerEntity> sellers = IntStream.range(0, 10).mapToObj(i -> {
+            List<SellerEntity> sellers = IntStream.range(0, 3).mapToObj(i -> {
                 SellerEntity seller = new SellerEntity();
-                seller.setProducer(producers.get(i % producers.size())); // Reuse producers for each SellerInfoEntity
+                seller.setProducerId(producers.get((i+randomIndex) % producers.size()).getId()); // Reuse producers for each SellerInfoEntity
                 seller.setSellerInfo(sellerInfo);
                 seller.setState(getRandomSellerState()); // Assuming SellerState.REGULAR is an enum value
                 return seller;
@@ -152,6 +141,28 @@ public class DataInitializer implements ApplicationRunner {
         SellerState[] states = SellerState.values();
         int randomIndex = random.nextInt(states.length);
         return states[randomIndex];
+    }
+
+    private static List<String> generateProducerNames() {
+        String[] descriptiveWords = {"Global", "Tech", "Fresh", "Style", "Home", "Adventure", "NextGen", "Little", "HealthFirst", "Auto"};
+        String[] industryTypes = {"Goods", "Pioneers", "Farms", "Masters", "Comforts", "Gear", "Electronics", "Learners", "Pharmaceuticals", "Innovators"};
+        String[] suffixes = {"Inc.", "LLC", "Group", "Co.", "Corp.", "Ltd.", "Brands", "Partners", "Studio", "Associates"};
+
+        List<String> producerNames = new ArrayList<>();
+
+        outerLoop:
+        for (String word : descriptiveWords) {
+            for (String industry : industryTypes) {
+                for (String suffix : suffixes) {
+                    producerNames.add(word + industry + " " + suffix);
+                    if (producerNames.size() == 100) {
+                        break outerLoop;
+                    }
+                }
+            }
+        }
+
+        return producerNames;
     }
 
 }

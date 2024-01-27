@@ -10,4 +10,5 @@ import java.util.UUID;
 public interface SellerInfoRepository extends JpaRepository<SellerInfoEntity, UUID>,
                                             JpaSpecificationExecutor<SellerInfoEntity> {
 
+    public SellerInfoEntity findByExternalIdAndMarketplaceId(String externalId, String marketplaceId);
 }
