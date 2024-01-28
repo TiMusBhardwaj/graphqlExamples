@@ -65,7 +65,7 @@ public class SellerGraphQLController {
 
     @QueryMapping
     public SellerPageableResponse sellers(@Argument SellerFilter filter, @Argument PageInput page, @Argument SellerSortBy sortBy) {
-        return sellerService.getSellers(filter, page, sortBy);
+        return sellerService.getSellers2(filter, page, sortBy);
     }
 
     @SchemaMapping(typeName = "Seller", field = "producerSellerStates")

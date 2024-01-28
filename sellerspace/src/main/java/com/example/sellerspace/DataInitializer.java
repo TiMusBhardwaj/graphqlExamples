@@ -122,8 +122,9 @@ public class DataInitializer implements ApplicationRunner {
 
         // Fetch all SellerInfoEntity instances
         List<SellerInfoEntity> sellerInfos = sellerInfoRepository.findAll();
-        int randomIndex = random.nextInt(90);
+
         sellerInfos.forEach(sellerInfo -> {
+            int randomIndex = random.nextInt(90);
             // For each SellerInfoEntity, create and save 10 SellerEntity instances
             List<SellerEntity> sellers = IntStream.range(0, 3).mapToObj(i -> {
                 SellerEntity seller = new SellerEntity();
