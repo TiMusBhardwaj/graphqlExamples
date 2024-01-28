@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
-@Component
+//@Component
 public class DataInitializer implements ApplicationRunner {
 
     @Autowired
