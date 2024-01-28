@@ -110,6 +110,26 @@ public class GraphQLIntegrationTest {
                 .jsonPath("$.data.sellers.data[10].sellerName").isEqualTo("Seller_Name_28");
     }
 
+    @Test
+    public void testBySellerNameAndProducerIdAndMarketPlaceIdOrderByNameAsc() {
+        String query = "{\"query\":\"query MyQuery { sellers(page: {size: 10, page: 1}, filter: {searchByName: \\\"8\\\", marketplaceIds: [\\\"ebay\\\", \\\"etsy\\\"], producerIds: \\\"78d3bfae-a058-4729-81ff-bf57e3c16ad0\\\"}, sortBy: NAME_ASC) { data { marketplaceId producerSellerStates { producerId producerName sellerId sellerState } externalId } meta { page size totalElements totalPages } } }\"}";
+
+        webTestClient.post().uri("/graphql")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(query)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.data.sellers.meta.page").isEqualTo(1)
+                .jsonPath("$.data.sellers.meta.size").isEqualTo(2)
+                .jsonPath("$.data.sellers.meta.totalElements").isEqualTo(2)
+                .jsonPath("$.data.sellers.data[1].marketplaceId").isEqualTo("etsy")
+                .jsonPath("$.data.sellers.data[1].externalId").isEqualTo("c197edfd-429b-4e1f-9865-1e62059678c7")
+                .jsonPath("$.data.sellers.data[0].producerSellerStates[0].producerId").isEqualTo("a150d2a4-c6c6-4aef-a97b-749416c28918")
+
+        ;
+
+    }
 
 
 }
