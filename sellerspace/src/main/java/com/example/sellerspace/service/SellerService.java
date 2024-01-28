@@ -47,29 +47,6 @@ public class SellerService {
     }
 
     public SellerPageableResponse getSellers(SellerFilter filter, PageInput pageInput, SellerSortBy sortBy) {
-
-
-        // Create Specification based on filter
-        Specification<SellerInfoEntity> spec = SellerSpecifications.buildSpecification(filter);
-
-        // Create Pageable instance for pagination and sorting
-        Pageable pageable = createPageable(pageInput, sortBy);
-
-
-        // Fetch page of sellers based on Specification and Pageable
-        Page<SellerInfoEntity> sellerPage = sellerInfoRepository.findAll(spec, pageable);
-
-        // Convert entities to GraphQL response types
-        List<Seller> sellers = sellerPage.getContent().stream()
-                .map(x -> Seller.of(x.getName(), x.getExternalId(), x.getMarketplace().getId()))
-                .collect(Collectors.toList());
-
-
-        return getSellerPageableResponse(sellerPage, sellers);
-    }
-
-
-    public SellerPageableResponse getSellers2(SellerFilter filter, PageInput pageInput, SellerSortBy sortBy) {
         // Create Pageable instance for pagination and sorting
         Pageable pageable = createPageable(pageInput, sortBy);
         Specification<SellerInfoEntity> spec = SellerSpecifications.buildSpecification(filter);

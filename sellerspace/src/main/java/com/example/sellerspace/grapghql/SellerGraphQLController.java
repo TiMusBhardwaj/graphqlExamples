@@ -31,7 +31,6 @@ public class SellerGraphQLController {
     private final SellerService sellerService;
 
 
-
     public SellerGraphQLController(SellerService sellerService, BatchLoaderRegistry registry) {
         this.sellerService = sellerService;
         registry.forName("producerNameDataLoader").registerMappedBatchLoader(producerNameDataLoaderBiFunction(sellerService));
@@ -51,9 +50,9 @@ public class SellerGraphQLController {
         BiFunction<Set<UUID>, BatchLoaderEnvironment, Mono<Map<UUID, List<ProducerSellerState>>>> producerSellerStatesInfoIdLoader = (Set<UUID> ids, BatchLoaderEnvironment env) -> {
             ///
             Map<UUID, List<ProducerSellerState>> map = sellerService.getSellersByInfoIds(ids).stream()
-                    .map(seller -> Map.entry(seller.getSellerInfo().getId(),  new ProducerSellerState(seller.getProducerId(), null, seller.getState(), seller.getSellerInfo().getId())))
+                    .map(seller -> Map.entry(seller.getSellerInfo().getId(), new ProducerSellerState(seller.getProducerId(), null, seller.getState(), seller.getSellerInfo().getId())))
                     .collect(Collectors.groupingBy(Map.Entry::getKey,
-                    Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
+                            Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
 
             return Mono.just(map);
 
@@ -72,7 +71,7 @@ public class SellerGraphQLController {
     }
 
     private static List<ProducerSellerState> getSellerByExternalIdAndMarketplaceId(SellerService sellerService, Pair<String, String> x) {
-        List<SellerEntity> sellers =  sellerService.getSellerByExternalIdAndMarketplaceId(x.getFirst(), x.getSecond());
+        List<SellerEntity> sellers = sellerService.getSellerByExternalIdAndMarketplaceId(x.getFirst(), x.getSecond());
         return sellers.stream()
                 .map(seller ->
                         new ProducerSellerState(seller.getProducerId(), null, seller.getState(), seller.getSellerInfo().getId())).toList();
@@ -82,25 +81,19 @@ public class SellerGraphQLController {
 
     @QueryMapping
     public SellerPageableResponse sellers(@Argument SellerFilter filter, @Argument PageInput page, @Argument SellerSortBy sortBy) {
-        return sellerService.getSellers2(filter, page, sortBy);
+        return sellerService.getSellers(filter, page, sortBy);
     }
 
-    //@SchemaMapping(typeName = "Seller", field = "producerSellerStates")
-    public CompletableFuture<List<ProducerSellerState>> producerSellerStates(Seller sellerResponse, DataFetchingEnvironment env ) {
-        DataLoader<Pair<String, String>, List<ProducerSellerState>> dataLoader = env.getDataLoader("producerSellerStatesLoader");
-        return dataLoader.load(Pair.of(sellerResponse.getExternalId(), sellerResponse.getMarketplaceId()));
-
-    }
 
     @SchemaMapping(typeName = "Seller", field = "producerSellerStates")
-    public CompletableFuture<List<ProducerSellerState>> producerSellerStates2(Seller sellerResponse, DataFetchingEnvironment env) {
+    public CompletableFuture<List<ProducerSellerState>> producerSellerStates(Seller sellerResponse, DataFetchingEnvironment env) {
         DataLoader<UUID, List<ProducerSellerState>> dataLoader = env.getDataLoader("producerSellerStatesInfoIdLoader");
         return dataLoader.load(sellerResponse.getId());
 
     }
 
     @SchemaMapping(typeName = "ProducerSellerState", field = "producerName")
-    public CompletableFuture<String> producerName(ProducerSellerState producerSellerState, DataFetchingEnvironment env ) {
+    public CompletableFuture<String> producerName(ProducerSellerState producerSellerState, DataFetchingEnvironment env) {
         DataLoader<UUID, String> dataLoader = env.getDataLoader("producerNameDataLoader");
 
 
