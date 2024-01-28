@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import com.example.sellerspace.request.PageInput;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -75,8 +76,9 @@ public class SellerService {
 
 
         Page<SellerInfoDTO> dto = customSellerInfoRepository.findSellersByFilterWithPagination(spec, pageable, sortBy);
-        List<Seller> sellers = dto.getContent().stream().map(x -> Seller.of(x.getName(), x.getExternalId(), x.getMarketplaceId()))
+        List<Seller> sellers = dto.getContent().stream().map(x -> Seller.of(x.getId(), x.getName(), x.getExternalId(), x.getMarketplaceId()))
                 .collect(Collectors.toList());
+
 
 
         return getSellerPageableResponse(dto, sellers);
@@ -88,7 +90,7 @@ public class SellerService {
         int size = pageInput.getSize();
 
 
-        return PageRequest.of(page, size, sortBy.getSort());
+        return PageRequest.of(page, size, sortBy == null? Sort.unsorted() : sortBy.getSort());
     }
 
 
@@ -114,5 +116,10 @@ public class SellerService {
         response.setMeta(pageMeta);
         response.setData(sellers);
         return response;
+    }
+
+    public List<SellerEntity> getSellersByInfoIds(Set<UUID> ids) {
+
+        return sellerRepository.findBySellerInfo_IdIn(ids);
     }
 }

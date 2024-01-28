@@ -22,6 +22,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 @Controller
@@ -35,6 +36,7 @@ public class SellerGraphQLController {
         this.sellerService = sellerService;
         registry.forName("producerNameDataLoader").registerMappedBatchLoader(producerNameDataLoaderBiFunction(sellerService));
         registry.forName("producerSellerStatesLoader").registerMappedBatchLoader(producerSellerStatesLoaderBiFunction(sellerService));
+        registry.forName("producerSellerStatesInfoIdLoader").registerMappedBatchLoader(producerSellerStatesInfoIdLoaderBiFunction(sellerService));
 
     }
 
@@ -43,6 +45,21 @@ public class SellerGraphQLController {
             return Mono.just(ids.stream().map(pair -> Map.entry(pair, getSellerByExternalIdAndMarketplaceId(sellerService, pair))).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
         };
         return producerSellerStatesLoader;
+    }
+
+    private static BiFunction producerSellerStatesInfoIdLoaderBiFunction(SellerService sellerService) {
+        BiFunction<Set<UUID>, BatchLoaderEnvironment, Mono<Map<UUID, List<ProducerSellerState>>>> producerSellerStatesInfoIdLoader = (Set<UUID> ids, BatchLoaderEnvironment env) -> {
+            ///
+            Map<UUID, List<ProducerSellerState>> map = sellerService.getSellersByInfoIds(ids).stream()
+                    .map(seller -> Map.entry(seller.getSellerInfo().getId(),  new ProducerSellerState(seller.getProducerId(), null, seller.getState(), seller.getSellerInfo().getId())))
+                    .collect(Collectors.groupingBy(Map.Entry::getKey,
+                    Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
+
+            return Mono.just(map);
+
+
+        };
+        return producerSellerStatesInfoIdLoader;
     }
 
     private static BiFunction producerNameDataLoaderBiFunction(SellerService sellerService) {
@@ -68,10 +85,17 @@ public class SellerGraphQLController {
         return sellerService.getSellers2(filter, page, sortBy);
     }
 
-    @SchemaMapping(typeName = "Seller", field = "producerSellerStates")
-    public CompletableFuture<List<ProducerSellerState>> producerSellerStates(Seller sellerResponse, DataFetchingEnvironment env , @Argument SellerFilter filter) {
+    //@SchemaMapping(typeName = "Seller", field = "producerSellerStates")
+    public CompletableFuture<List<ProducerSellerState>> producerSellerStates(Seller sellerResponse, DataFetchingEnvironment env ) {
         DataLoader<Pair<String, String>, List<ProducerSellerState>> dataLoader = env.getDataLoader("producerSellerStatesLoader");
         return dataLoader.load(Pair.of(sellerResponse.getExternalId(), sellerResponse.getMarketplaceId()));
+
+    }
+
+    @SchemaMapping(typeName = "Seller", field = "producerSellerStates")
+    public CompletableFuture<List<ProducerSellerState>> producerSellerStates2(Seller sellerResponse, DataFetchingEnvironment env) {
+        DataLoader<UUID, List<ProducerSellerState>> dataLoader = env.getDataLoader("producerSellerStatesInfoIdLoader");
+        return dataLoader.load(sellerResponse.getId());
 
     }
 
